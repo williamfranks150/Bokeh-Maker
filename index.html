@@ -86,6 +86,19 @@
   .reset{width:100%;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);
     color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px;}
 
+  #maskLayer{position:absolute;inset:0;touch-action:none;display:none;z-index:20;}
+  #maskLayer.on{display:block;}
+  #maskbar{position:absolute;left:0;right:0;bottom:0;display:none;flex-direction:column;gap:8px;
+    padding:10px 14px calc(env(safe-area-inset-bottom) + 10px);background:rgba(8,9,11,.92);
+    backdrop-filter:blur(10px);z-index:21;}
+  #maskbar.on{display:flex;}
+  #maskbar .row2{display:flex;align-items:center;gap:10px;}
+  #maskbar .row2 input[type=range]{flex:1;}
+  .masknote{font-size:11px;color:var(--dim);line-height:1.4;}
+  .maskbtn{padding:9px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--line);
+    color:var(--txt);font-size:12.5px;font-weight:650;cursor:pointer;white-space:nowrap;}
+  .maskbtn.primary{background:var(--accent);border-color:var(--accent);color:#161208;}
+
   #shot{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:50;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px;}
   #shot.on{display:flex;}
@@ -107,6 +120,17 @@
       <div id="readout">--</div>
     </div>
     <div class="chip" id="rotchip">ROT <span class="v" id="rotval">0&deg;</span></div>
+  </div>
+
+  <canvas id="maskLayer"></canvas>
+  <div id="maskbar">
+    <div class="masknote">Paint over anything that should stay sharp — a face, a hand, anything in focus. Masked areas never get a bolt.</div>
+    <div class="row2">
+      <span style="font-size:11px;color:var(--dim);">Brush</span>
+      <input type="range" id="s_brush" min="15" max="90" step="1" value="42">
+      <button class="maskbtn" id="maskclear">Clear</button>
+      <button class="maskbtn primary" id="maskdone">Done</button>
+    </div>
   </div>
 
   <div id="gate">
@@ -145,16 +169,16 @@
       </div>
 
       <div class="ctl">
-        <div class="lab">Bokeh size <b id="v_size">13.0%</b></div>
-        <input type="range" id="s_size" min="30" max="260" step="1" value="130">
+        <div class="lab">Bokeh size <b id="v_size">10.0%</b></div>
+        <input type="range" id="s_size" min="30" max="260" step="1" value="100">
       </div>
       <div class="ctl">
         <div class="lab">Defocus <b id="v_blur">medium</b></div>
         <input type="range" id="s_blur" min="0" max="100" step="1" value="55">
       </div>
       <div class="ctl">
-        <div class="lab">Highlight threshold <b id="v_thr">0.58</b></div>
-        <input type="range" id="s_thr" min="15" max="96" step="1" value="58">
+        <div class="lab">Highlight threshold <b id="v_thr">0.68</b></div>
+        <input type="range" id="s_thr" min="15" max="96" step="1" value="68">
       </div>
       <div class="ctl">
         <div class="lab">Bokeh brightness <b id="v_gain">1.00</b></div>
@@ -165,10 +189,11 @@
         <input type="range" id="s_bg" min="0" max="100" step="1" value="50">
       </div>
       <div class="ctl">
-        <div class="lab">Max bokeh count <b id="v_max">70</b></div>
-        <input type="range" id="s_max" min="4" max="160" step="1" value="70">
+        <div class="lab">Max bokeh count <b id="v_max">26</b></div>
+        <input type="range" id="s_max" min="4" max="160" step="1" value="26">
       </div>
 
+      <button class="reset" id="maskbtn" style="background:var(--panel);">Mask subject (exclude from bokeh)</button>
       <button class="reset" id="resetbtn">Reset to defaults</button>
       <div class="note">
         Point at small separated practicals against a dark background. Raise the threshold until
@@ -230,7 +255,14 @@ var running = false, fxOn = true, mode = null;   // null | 'live' | 'photo'
 var photo = null, photoW = 0, photoH = 0;
 var lastT = 0, fps = 0, dirty = true;
 
-var DEF = {rot:0, size:130, blur:55, thr:58, gain:100, bg:50, max:70};
+/* ---------- exclusion mask: subject areas that never get a bolt ---------- */
+var maskLayer = $('maskLayer'), mctx = maskLayer.getContext('2d');
+var maskOn = false;                 // editing mode: painting UI is live
+var maskPts = [];                   // [{x,y,r}] normalised 0..1 of DISPLAYED frame, r as fraction of width
+var brushR = 42;                    // px on screen, converted at paint time
+var painting = false;
+
+var DEF = {rot:0, size:100, blur:55, thr:68, gain:100, bg:50, max:26};
 var P = {};
 for(var k in DEF) P[k] = DEF[k];
 try{
@@ -441,6 +473,8 @@ function go(){
   hud.style.display = 'flex';
   $('diag').style.display = 'none';
   $('diagbtn').textContent = 'Show diagnostics';
+  maskPts = [];               // a mask painted for the last frame won't line up with a new one
+  setMaskMode(false);
   running = true;
   dirty = true;
   sizeCanvas();
@@ -460,6 +494,9 @@ function sizeCanvas(){
   view.style.height = Math.round(vh*s)+'px';
   var dw = 168, dh = Math.max(1, Math.round(dw*vh/vw));
   det.width = dw; det.height = dh;
+  maskLayer.width = view.width; maskLayer.height = view.height;
+  maskLayer.style.width = view.style.width; maskLayer.style.height = view.style.height;
+  redrawMask();
   dirty = true;
 }
 window.addEventListener('resize', function(){ if(running) sizeCanvas(); });
@@ -467,8 +504,68 @@ window.addEventListener('orientationchange', function(){
   setTimeout(function(){ if(running) sizeCanvas(); }, 350);
 });
 
+/* ---------- mask painting ---------- */
+function redrawMask(){
+  mctx.setTransform(1,0,0,1,0,0);
+  mctx.clearRect(0,0,maskLayer.width,maskLayer.height);
+  if(!maskOn) return;
+  mctx.fillStyle = 'rgba(232,178,58,0.30)';
+  mctx.strokeStyle = 'rgba(232,178,58,0.85)';
+  mctx.lineWidth = 2;
+  for(var i=0;i<maskPts.length;i++){
+    var m = maskPts[i];
+    var cx = m.x*maskLayer.width, cy = m.y*maskLayer.height, r = m.r*maskLayer.width;
+    mctx.beginPath(); mctx.arc(cx,cy,r,0,Math.PI*2); mctx.fill(); mctx.stroke();
+  }
+}
+function paintAt(clientX, clientY){
+  var rect = maskLayer.getBoundingClientRect();
+  if(rect.width<=0||rect.height<=0) return;
+  var x = (clientX-rect.left)/rect.width, y = (clientY-rect.top)/rect.height;
+  if(x<0||x>1||y<0||y>1) return;
+  var r = (brushR/rect.width);
+  maskPts.push({x:x, y:y, r:r});
+  redrawMask();
+  dirty = true;
+}
+function maskedOut(dispX, dispY){
+  // dispX/dispY: 0..1 fraction of the DISPLAYED (post-mirror) frame
+  if(!maskPts.length) return false;
+  var aspect = maskLayer.height / Math.max(1,maskLayer.width);
+  for(var i=0;i<maskPts.length;i++){
+    var m = maskPts[i];
+    var dx = dispX-m.x, dy = (dispY-m.y)/Math.max(1e-6,aspect);
+    if(dx*dx+dy*dy <= m.r*m.r) return true;
+  }
+  return false;
+}
+maskLayer.addEventListener('pointerdown', function(e){
+  if(!maskOn) return;
+  painting = true;
+  maskLayer.setPointerCapture(e.pointerId);
+  paintAt(e.clientX, e.clientY);
+});
+maskLayer.addEventListener('pointermove', function(e){
+  if(!maskOn || !painting) return;
+  paintAt(e.clientX, e.clientY);
+});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+  maskLayer.addEventListener(ev, function(){ painting = false; });
+});
+
+function setMaskMode(on){
+  maskOn = on;
+  maskLayer.classList.toggle('on', on);
+  $('maskbar').classList.toggle('on', on);
+  redrawMask();
+}
+$('maskbtn').addEventListener('click', function(){ setMaskMode(true); });
+$('maskdone').addEventListener('click', function(){ setMaskMode(false); });
+$('maskclear').addEventListener('click', function(){ maskPts = []; redrawMask(); dirty = true; });
+$('s_brush').addEventListener('input', function(){ brushR = +this.value; });
+
 /* ---------- detection ---------- */
-function findHighlights(){
+function findHighlights(mirror){
   var dw = det.width, dh = det.height;
   try{ dctx.drawImage(srcNode(), 0, 0, dw, dh); }catch(e){ return []; }
   var img;
@@ -516,6 +613,8 @@ function findHighlights(){
   var minD = Math.max(0.010, boltFrac*0.20);
   var out = [];
   for(var m=0;m<cand.length && out.length<P.max;m++){
+    var dispX = mirror ? (1-cand[m].x) : cand[m].x;
+    if(maskedOut(dispX, cand[m].y)) continue;
     var ok = true;
     for(var n=0;n<out.length;n++){
       var ddx = cand[m].x-out[n].x, ddy = cand[m].y-out[n].y;
@@ -583,7 +682,7 @@ function render(){
     vctx.fillRect(0,0,W,H);
   }
 
-  var hs = findHighlights();
+  var hs = findHighlights(mirror);
   var base = (P.size/1000) * Math.min(W,H);
   var gain = P.gain/100;
   vctx.globalCompositeOperation = 'lighter';
