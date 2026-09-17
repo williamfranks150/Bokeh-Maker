@@ -1,1 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bolt Bokeh">
+<meta name="theme-color" content="#08090b">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<title>Bolt Bokeh</title>
+<style>
+  :root{
+    --bg:#08090b; --panel:#14171c; --line:#2a2f37; --txt:#e8ecf1;
+    --dim:#98a1ac; --accent:#e8b23a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+    overscroll-behavior:none;}
+  body{display:flex;flex-direction:column;overflow:hidden;}
+
+  #stage{position:relative;flex:1;min-height:0;background:#000;display:flex;
+    align-items:center;justify-content:center;overflow:hidden;}
+  #view{max-width:100%;max-height:100%;display:block;}
+  video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+
+  #gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;padding:26px 22px;text-align:center;background:var(--bg);
+    z-index:30;overflow-y:auto;}
+  #gate h1{font-size:20px;margin:0 0 2px;font-weight:650;letter-spacing:.2px;}
+  #gate p{margin:0;font-size:13px;line-height:1.55;color:var(--dim);max-width:340px;}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--txt);
+    padding:13px 24px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;
+    display:inline-block;text-decoration:none;min-width:210px;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#161208;}
+  .err{color:#ff9a8a;font-size:12.5px;line-height:1.55;max-width:340px;}
+  .link{color:var(--dim);font-size:11.5px;text-decoration:underline;cursor:pointer;background:none;
+    border:none;padding:4px;}
+  pre#diag{font-size:10.5px;line-height:1.55;color:var(--dim);background:var(--panel);
+    border:1px solid var(--line);border-radius:9px;padding:10px;margin:0;text-align:left;
+    white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace;
+    max-width:360px;width:100%;}
+
+  #hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:flex-start;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;
+    pointer-events:none;z-index:12;gap:8px;}
+  .chip{pointer-events:auto;background:rgba(14,16,20,.74);backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);
+    border-radius:999px;padding:8px 14px;font-size:12px;font-weight:650;color:var(--txt);
+    cursor:pointer;white-space:nowrap;user-select:none;}
+  .chip.off{opacity:.42;}
+  .chip .v{color:var(--accent);}
+  #readout{pointer-events:none;background:rgba(14,16,20,.74);border-radius:8px;
+    padding:5px 9px;font-size:10.5px;color:var(--dim);font-variant-numeric:tabular-nums;}
+
+  #bar{flex:0 0 auto;background:var(--bg);padding:10px 14px calc(env(safe-area-inset-bottom) + 12px);
+    border-top:1px solid var(--line);z-index:14;}
+  #row{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  #shutter{width:66px;height:66px;border-radius:50%;background:#fff;border:4px solid #3a3f47;
+    cursor:pointer;flex:0 0 auto;}
+  #shutter:active{transform:scale(.94);}
+  .sq{width:48px;height:48px;border-radius:13px;background:var(--panel);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex:0 0 auto;
+    user-select:none;}
+
+  #panel{max-height:0;overflow:hidden;transition:max-height .22s ease;}
+  #panel.open{max-height:60vh;overflow-y:auto;}
+  .grp{padding:14px 2px 4px;}
+  .ctl{margin-bottom:14px;}
+  .lab{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);
+    margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;}
+  .lab b{color:var(--txt);font-weight:650;font-variant-numeric:tabular-nums;}
+  input[type=range]{width:100%;appearance:none;height:28px;background:transparent;margin:0;}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:2px;}
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);margin-top:-11px;border:none;}
+  .snaps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .snap{flex:1;min-width:50px;padding:9px 0;text-align:center;font-size:12px;font-weight:650;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;cursor:pointer;
+    user-select:none;}
+  .snap.on{background:var(--accent);color:#161208;border-color:var(--accent);}
+  .note{font-size:11px;color:var(--dim);line-height:1.55;padding:2px 2px 12px;}
+  .reset{width:100%;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);
+    color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px;}
+
+  #shot{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:50;display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px;}
+  #shot.on{display:flex;}
+  #shotimg{max-width:100%;max-height:66vh;border-radius:10px;}
+  #shotrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  #shotrow .btn{min-width:120px;}
+  #shotnote{font-size:11.5px;color:var(--dim);text-align:center;max-width:330px;line-height:1.55;}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <video id="cam" playsinline muted autoplay></video>
+  <canvas id="view"></canvas>
+
+  <div id="hud" style="display:none">
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+      <div class="chip" id="fxchip">BOKEH <span class="v" id="fxstate">ON</span></div>
+      <div id="readout">--</div>
+    </div>
+    <div class="chip" id="rotchip">ROT <span class="v" id="rotval">0&deg;</span></div>
+  </div>
+
+  <div id="gate">
+    <h1>Bolt Bokeh</h1>
+    <p>Replaces bright highlights with lightning-bolt bokeh. A rendered simulation for showing the look, not a preview of what the lens will do.</p>
+    <button class="btn primary" id="pickbtn">Take or choose a photo</button>
+    <button class="btn" id="start">Use live camera</button>
+    <input type="file" id="pick" accept="image/*" style="display:none">
+    <div class="err" id="err" style="display:none"></div>
+    <button class="link" id="diagbtn">Show diagnostics</button>
+    <pre id="diag" style="display:none"></pre>
+    <div id="openself"></div>
+  </div>
+</div>
+
+<div id="bar">
+  <div id="row">
+    <div class="sq" id="gear">&#9776;</div>
+    <div id="shutter"></div>
+    <div class="sq" id="srcbtn">&#8644;</div>
+  </div>
+
+  <div id="panel">
+    <div class="grp">
+      <div class="ctl">
+        <div class="lab">Bolt rotation <b id="v_rot">0&deg;</b></div>
+        <input type="range" id="s_rot" min="-180" max="180" step="1" value="0">
+        <div class="snaps">
+          <div class="snap" data-rot="-90">-90</div>
+          <div class="snap" data-rot="-45">-45</div>
+          <div class="snap on" data-rot="0">0</div>
+          <div class="snap" data-rot="45">45</div>
+          <div class="snap" data-rot="90">90</div>
+          <div class="snap" data-rot="180">180</div>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab">Bokeh size <b id="v_size">13.0%</b></div>
+        <input type="range" id="s_size" min="30" max="260" step="1" value="130">
+      </div>
+      <div class="ctl">
+        <div class="lab">Defocus <b id="v_blur">medium</b></div>
+        <input type="range" id="s_blur" min="0" max="100" step="1" value="55">
+      </div>
+      <div class="ctl">
+        <div class="lab">Highlight threshold <b id="v_thr">0.58</b></div>
+        <input type="range" id="s_thr" min="15" max="96" step="1" value="58">
+      </div>
+      <div class="ctl">
+        <div class="lab">Bokeh brightness <b id="v_gain">1.00</b></div>
+        <input type="range" id="s_gain" min="20" max="250" step="1" value="100">
+      </div>
+      <div class="ctl">
+        <div class="lab">Background level <b id="v_bg">50%</b></div>
+        <input type="range" id="s_bg" min="0" max="100" step="1" value="50">
+      </div>
+      <div class="ctl">
+        <div class="lab">Max bokeh count <b id="v_max">70</b></div>
+        <input type="range" id="s_max" min="4" max="160" step="1" value="70">
+      </div>
+
+      <button class="reset" id="resetbtn">Reset to defaults</button>
+      <div class="note">
+        Point at small separated practicals against a dark background. Raise the threshold until
+        only the lights trigger. Tap BOKEH at top-left to A/B against the plain image.
+        The bottom-right button swaps camera, or loads a different photo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="shot">
+  <img id="shotimg" alt="capture">
+  <div id="shotrow">
+    <button class="btn" id="shotback">Back</button>
+    <button class="btn primary" id="shotsave">Save</button>
+  </div>
+  <div id="shotnote">On iPhone you can also press and hold the image and choose Add to Photos.</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- bolt #8, normalised, y-up ---------- */
+var BOLT = [
+  [ 0.2163,  0.7366],
+  [-0.3785, -0.1554],
+  [-0.0811, -0.1149],
+  [-0.2163, -0.7366],
+  [ 0.3785,  0.1622],
+  [ 0.0811,  0.1149]
+];
+var BOLT_R = 0.7677;
+
+var $ = function(id){ return document.getElementById(id); };
+
+var video  = $('cam');
+var view   = $('view');
+var vctx   = view.getContext('2d', {alpha:false});
+var gate   = $('gate');
+var errBox = $('err');
+var hud    = $('hud');
+var readout= $('readout');
+
+var det = document.createElement('canvas');
+var dctx = det.getContext('2d', {willReadFrequently:true});
+var tiny = document.createElement('canvas');
+var tctx = tiny.getContext('2d');
+var knock = document.createElement('canvas');
+var kctx = knock.getContext('2d', {willReadFrequently:true});
+var sprite = document.createElement('canvas');
+var sctx = sprite.getContext('2d');
+var SPRITE_PX = 168;
+sprite.width = sprite.height = SPRITE_PX;
+
+var tintCache = new Map();
+var stream = null, facing = 'environment';
+var running = false, fxOn = true, mode = null;   // null | 'live' | 'photo'
+var photo = null, photoW = 0, photoH = 0;
+var lastT = 0, fps = 0, dirty = true;
+
+var DEF = {rot:0, size:130, blur:55, thr:58, gain:100, bg:50, max:70};
+var P = {};
+for(var k in DEF) P[k] = DEF[k];
+try{
+  var raw = localStorage.getItem('boltbokeh.v2');
+  if(raw){ var o = JSON.parse(raw); for(var j in DEF){ if(typeof o[j] === 'number') P[j] = o[j]; } }
+}catch(e){}
+function persist(){ try{ localStorage.setItem('boltbokeh.v2', JSON.stringify(P)); }catch(e){} }
+
+/* ---------- source abstraction ---------- */
+function srcNode(){ return mode === 'live' ? video : photo; }
+function srcW(){ return mode === 'live' ? (video.videoWidth||0)  : photoW; }
+function srcH(){ return mode === 'live' ? (video.videoHeight||0) : photoH; }
+
+/* ---------- sprite ---------- */
+var ss = document.createElement('canvas');
+var ssctx = ss.getContext('2d');
+function buildSprite(){
+  var SS = SPRITE_PX*3;
+  ss.width = ss.height = SS;
+  ssctx.setTransform(1,0,0,1,0,0);
+  ssctx.clearRect(0,0,SS,SS);
+  var c = SS/2, k = c / BOLT_R * 0.90;
+  ssctx.save();
+  ssctx.translate(c,c);
+  ssctx.rotate(P.rot * Math.PI/180);
+  ssctx.beginPath();
+  for(var i=0;i<BOLT.length;i++){
+    var x = BOLT[i][0]*k, y = -BOLT[i][1]*k;
+    if(i===0) ssctx.moveTo(x,y); else ssctx.lineTo(x,y);
+  }
+  ssctx.closePath();
+  ssctx.fillStyle = '#fff';
+  ssctx.fill();
+  ssctx.restore();
+  sctx.setTransform(1,0,0,1,0,0);
+  sctx.clearRect(0,0,SPRITE_PX,SPRITE_PX);
+  sctx.imageSmoothingEnabled = true;
+  sctx.imageSmoothingQuality = 'high';
+  sctx.drawImage(ss,0,0,SPRITE_PX,SPRITE_PX);
+  tintCache.clear();
+  dirty = true;
+}
+
+function tinted(r,g,b){
+  var key = ((r>>3)<<10) | ((g>>3)<<5) | (b>>3);
+  var hit = tintCache.get(key);
+  if(hit) return hit;
+  var cv = document.createElement('canvas');
+  cv.width = cv.height = SPRITE_PX;
+  var cx = cv.getContext('2d');
+  cx.drawImage(sprite,0,0);
+  cx.globalCompositeOperation = 'source-in';
+  cx.fillStyle = 'rgb('+(((r>>3)<<3)|7)+','+(((g>>3)<<3)|7)+','+(((b>>3)<<3)|7)+')';
+  cx.fillRect(0,0,SPRITE_PX,SPRITE_PX);
+  if(tintCache.size > 200) tintCache.clear();
+  tintCache.set(key, cv);
+  return cv;
+}
+
+/* ---------- diagnostics ---------- */
+var framed = false;
+try{ framed = (window.self !== window.top); }catch(e){ framed = true; }
+
+function diagText(extra){
+  var L = [];
+  L.push('framed:        ' + framed);
+  L.push('secureContext: ' + (window.isSecureContext === true));
+  L.push('protocol:      ' + location.protocol);
+  L.push('mediaDevices:  ' + !!navigator.mediaDevices);
+  L.push('getUserMedia:  ' + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+  try{
+    var fp = document.featurePolicy || document.permissionsPolicy;
+    L.push('policy camera: ' + (fp && fp.allowsFeature ? fp.allowsFeature('camera') : 'n/a'));
+  }catch(e){ L.push('policy camera: n/a'); }
+  L.push('ua:            ' + navigator.userAgent.slice(0,80));
+  if(extra) L.push('error:         ' + extra);
+  return L.join('\n');
+}
+var lastErr = '';
+function showDiag(){
+  var d = $('diag');
+  d.style.display = 'block';
+  d.textContent = diagText(lastErr);
+  $('diagbtn').textContent = 'Hide diagnostics';
+  try{
+    if(navigator.permissions && navigator.permissions.query){
+      navigator.permissions.query({name:'camera'}).then(function(st){
+        d.textContent = diagText(lastErr) + '\npermission:    ' + st.state;
+      })['catch'](function(){});
+    }
+  }catch(e){}
+  if(framed && !$('openself').dataset.done){
+    $('openself').dataset.done = '1';
+    var a = document.createElement('a');
+    a.href = location.href; a.target = '_blank'; a.rel = 'noopener';
+    a.className = 'btn primary'; a.textContent = 'Open in Safari';
+    $('openself').appendChild(a);
+    var tip = document.createElement('p');
+    tip.style.cssText = 'font-size:11.5px;line-height:1.6;color:var(--dim);max-width:340px;margin:12px auto 0;text-align:left;';
+    tip.innerHTML =
+      'This page is running inside an in-app webview that was never granted a camera, so the block ' +
+      'happens before any prompt can appear. Opening it in Safari is the only way to get live video.' +
+      '<br><br>If Safari also refuses:<br>' +
+      '1. Tap <b>AA</b> in the Safari address bar<br>' +
+      '2. Website Settings<br>' +
+      '3. Camera &rarr; Ask or Allow<br><br>' +
+      'Or Settings &rarr; Safari &rarr; Camera. Either way, the photo button above needs none of this.';
+    $('openself').appendChild(tip);
+  }
+}
+$('diagbtn').addEventListener('click', function(){
+  var d = $('diag');
+  if(d.style.display === 'block'){ d.style.display='none'; this.textContent='Show diagnostics'; }
+  else showDiag();
+});
+
+function fail(msg, err){
+  lastErr = err || '';
+  gate.style.display = 'flex';
+  hud.style.display = 'none';
+  errBox.style.display = 'block';
+  errBox.textContent = msg;
+  showDiag();
+}
+
+/* ---------- live camera ---------- */
+function stopStream(){
+  if(stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+}
+
+function startLive(){
+  errBox.style.display = 'none';
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return fail(framed
+      ? 'No camera API in this frame. Open the page in its own tab, or use the photo button above.'
+      : 'This browser exposes no camera API here. If you opened a saved file, the camera needs an https page. Use the photo button above instead.',
+      'no getUserMedia');
+  }
+  stopStream();
+  navigator.mediaDevices.getUserMedia({
+    video:{ facingMode:{ideal:facing}, width:{ideal:1920}, height:{ideal:1080} },
+    audio:false
+  }).then(function(s){
+    stream = s;
+    video.srcObject = s;
+    return video.play();
+  }).then(function(){
+    mode = 'live';
+    photo = null;
+    go();
+  })['catch'](function(e){
+    var nm = String((e && e.name) || ''), ms = String((e && e.message) || e);
+    if(/NotAllowed|Security/i.test(nm)){
+      fail(framed
+        ? 'The browser blocked the camera for this frame. That is usually the frame not being granted camera permission rather than you denying it. Open it in its own tab, or use the photo button.'
+        : 'Camera access denied. Re-allow it from the AA menu in the address bar, or Settings, Safari, Camera.', nm+' / '+ms);
+    } else if(/NotFound|Overconstrained/i.test(nm)){
+      fail('No camera matched. Try again, or use the photo button.', nm+' / '+ms);
+    } else if(/NotReadable|Abort/i.test(nm)){
+      fail('Camera busy in another app. Close it and retry.', nm+' / '+ms);
+    } else {
+      fail('Camera start failed.', nm+' / '+ms);
+    }
+  });
+}
+
+/* ---------- photo ---------- */
+$('pickbtn').addEventListener('click', function(){ $('pick').click(); });
+$('srcbtn').addEventListener('click', function(){
+  if(mode === 'photo'){ $('pick').click(); return; }
+  facing = (facing === 'environment') ? 'user' : 'environment';
+  startLive();
+});
+$('pick').addEventListener('change', function(ev){
+  var f = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if(!f) return;
+  loadPhoto(f);
+});
+
+function loadPhoto(file){
+  errBox.style.display = 'none';
+  var done = function(bmp, w, h){
+    stopStream();
+    photo = bmp; photoW = w; photoH = h;
+    mode = 'photo';
+    go();
+  };
+  if(window.createImageBitmap){
+    createImageBitmap(file, {imageOrientation:'from-image'}).then(function(b){
+      done(b, b.width, b.height);
+    })['catch'](function(){ viaImg(file, done); });
+  } else {
+    viaImg(file, done);
+  }
+}
+function viaImg(file, done){
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function(){ done(img, img.naturalWidth, img.naturalHeight); };
+  img.onerror = function(){ fail('Could not read that image.', 'decode failed'); };
+  img.src = url;
+}
+
+/* ---------- start rendering ---------- */
+function go(){
+  gate.style.display = 'none';
+  hud.style.display = 'flex';
+  $('diag').style.display = 'none';
+  $('diagbtn').textContent = 'Show diagnostics';
+  running = true;
+  dirty = true;
+  sizeCanvas();
+  requestAnimationFrame(loop);
+}
+
+function sizeCanvas(){
+  var vw = srcW() || 1280, vh = srcH() || 720;
+  var stage = $('stage');
+  var aw = stage.clientWidth, ah = stage.clientHeight;
+  if(!aw || !ah) return;
+  var s = Math.min(aw/vw, ah/vh);
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  view.width  = Math.max(2, Math.round(vw*s*dpr));
+  view.height = Math.max(2, Math.round(vh*s*dpr));
+  view.style.width  = Math.round(vw*s)+'px';
+  view.style.height = Math.round(vh*s)+'px';
+  var dw = 168, dh = Math.max(1, Math.round(dw*vh/vw));
+  det.width = dw; det.height = dh;
+  dirty = true;
+}
+window.addEventListener('resize', function(){ if(running) sizeCanvas(); });
+window.addEventListener('orientationchange', function(){
+  setTimeout(function(){ if(running) sizeCanvas(); }, 350);
+});
+
+/* ---------- detection ---------- */
+function findHighlights(){
+  var dw = det.width, dh = det.height;
+  try{ dctx.drawImage(srcNode(), 0, 0, dw, dh); }catch(e){ return []; }
+  var img;
+  try{ img = dctx.getImageData(0,0,dw,dh); }catch(e){ return []; }
+  var d = img.data;
+
+  var thr = P.thr/100;
+  var cell = 7;
+  var cx = Math.ceil(dw/cell);
+  var cy = Math.ceil(dh/cell);
+  var best = new Float32Array(cx*cy);
+  var bi = new Int32Array(cx*cy);
+  for(var z=0;z<bi.length;z++) bi[z] = -1;
+
+  for(var y=0;y<dh;y++){
+    for(var x=0;x<dw;x++){
+      var p = (y*dw+x)*4;
+      var l = (0.2126*d[p] + 0.7152*d[p+1] + 0.0722*d[p+2]) / 255;
+      if(l < thr) continue;
+      var ci = ((y/cell)|0)*cx + ((x/cell)|0);
+      if(l > best[ci]){ best[ci] = l; bi[ci] = p; }
+    }
+  }
+
+  var cand = [];
+  for(var i=0;i<bi.length;i++){
+    if(bi[i] < 0) continue;
+    var q = bi[i];
+    var idx = q/4;
+    var px = idx % dw;
+    var py = (idx - px) / dw;
+    var r = 1;
+    while(r < 14){
+      var t = (py*dw + Math.min(dw-1, px+r))*4;
+      var lt = (0.2126*d[t] + 0.7152*d[t+1] + 0.0722*d[t+2]) / 255;
+      if(lt < thr) break;
+      r++;
+    }
+    cand.push({x:px/dw, y:py/dh, l:best[i], r:r, c:[d[q], d[q+1], d[q+2]]});
+  }
+  cand.sort(function(a,b){ return b.l - a.l; });
+
+  // suppression radius scales with bolt size: peaks close together are one light
+  var boltFrac = P.size/1000;
+  var minD = Math.max(0.010, boltFrac*0.20);
+  var out = [];
+  for(var m=0;m<cand.length && out.length<P.max;m++){
+    var ok = true;
+    for(var n=0;n<out.length;n++){
+      var ddx = cand[m].x-out[n].x, ddy = cand[m].y-out[n].y;
+      if(ddx*ddx+ddy*ddy < minD*minD){ ok=false; break; }
+    }
+    if(ok) out.push(cand[m]);
+  }
+  return out;
+}
+
+/* ---------- render ---------- */
+function render(){
+  var W = view.width, H = view.height;
+  if(!W || !H || !srcW()) return 0;
+  var mirror = (mode === 'live' && facing === 'user');
+  var node = srcNode();
+
+  if(!fxOn){
+    vctx.save();
+    if(mirror){ vctx.translate(W,0); vctx.scale(-1,1); }
+    vctx.drawImage(node,0,0,W,H);
+    vctx.restore();
+    return -1;
+  }
+
+  var thrN = P.thr/100;
+
+  // --- base layer: flatten the existing highlights, then defocus ---
+  // Without this the source's own round blobs stay visible under the bolts,
+  // which is what makes a stamped-on-top result look pasted.
+  var kw = 320, kh = Math.max(2, Math.round(kw*H/W));
+  knock.width = kw; knock.height = kh;
+  kctx.drawImage(node,0,0,kw,kh);
+  try{
+    var kd = kctx.getImageData(0,0,kw,kh), b = kd.data;
+    var floor = thrN*255;
+    for(var q=0;q<b.length;q+=4){
+      var lum = 0.2126*b[q] + 0.7152*b[q+1] + 0.0722*b[q+2];
+      if(lum > floor){
+        var f = floor/lum;
+        b[q]   = b[q]*f;
+        b[q+1] = b[q+1]*f;
+        b[q+2] = b[q+2]*f;
+      }
+    }
+    kctx.putImageData(kd,0,0);
+  }catch(e){}
+
+  var shrink = 1 + (P.blur/100)*13;
+  tiny.width  = Math.max(2, Math.round(W/shrink));
+  tiny.height = Math.max(2, Math.round(H/shrink));
+  tctx.imageSmoothingEnabled = true;
+  tctx.drawImage(knock,0,0,tiny.width,tiny.height);
+
+  vctx.save();
+  if(mirror){ vctx.translate(W,0); vctx.scale(-1,1); }
+  vctx.imageSmoothingEnabled = true;
+  vctx.imageSmoothingQuality = 'high';
+  vctx.drawImage(tiny,0,0,W,H);
+  vctx.restore();
+
+  var bg = P.bg/100;
+  if(bg < 1){
+    vctx.fillStyle = 'rgba(0,0,0,' + (1-bg).toFixed(3) + ')';
+    vctx.fillRect(0,0,W,H);
+  }
+
+  var hs = findHighlights();
+  var base = (P.size/1000) * Math.min(W,H);
+  var gain = P.gain/100;
+  vctx.globalCompositeOperation = 'lighter';
+  for(var i=0;i<hs.length;i++){
+    var h = hs[i];
+    var sz = base * (0.80 + 0.055*h.r);
+    var x = (mirror ? (1-h.x) : h.x) * W;
+    var y = h.y * H;
+    var energy = (h.l - thrN) / Math.max(0.02, 1-thrN);
+    vctx.globalAlpha = Math.max(0.06, Math.min(1, gain * (0.50 + 0.85*energy)));
+    vctx.drawImage(tinted(h.c[0],h.c[1],h.c[2]), x - sz/2, y - sz/2, sz, sz);
+  }
+  vctx.globalAlpha = 1;
+  vctx.globalCompositeOperation = 'source-over';
+  return hs.length;
+}
+
+function loop(ts){
+  if(!running) return;
+  requestAnimationFrame(loop);
+  if(mode === 'photo' && !dirty) return;
+  dirty = false;
+  var n = render();
+  if(lastT){ fps = fps ? fps*0.9 + (1000/(ts-lastT))*0.1 : 1000/(ts-lastT); }
+  lastT = ts;
+  readout.textContent =
+    (n < 0 ? 'bypass' : n + ' bokeh') + '  \u00B7  ' +
+    (mode === 'photo' ? 'photo' : (fps ? fps.toFixed(0)+' fps' : '--')) +
+    '  \u00B7  rot ' + P.rot + '\u00B0';
+}
+
+/* ---------- capture ---------- */
+var shot = $('shot'), shotimg = $('shotimg'), lastBlob = null, downloads = null;
+if(window.claude && typeof window.claude.use === 'function'){
+  window.claude.use('downloads').then(function(d){ downloads = d; })['catch'](function(){});
+}
+$('shutter').addEventListener('click', function(){
+  if(!running) return;
+  dirty = true; render();
+  try{
+    shotimg.src = view.toDataURL('image/jpeg', 0.92);
+    shot.classList.add('on');
+    if(view.toBlob) view.toBlob(function(b){ lastBlob = b; }, 'image/jpeg', 0.92);
+  }catch(e){}
+});
+$('shotback').addEventListener('click', function(){ shot.classList.remove('on'); dirty = true; });
+$('shotsave').addEventListener('click', function(){
+  var name = 'bolt-bokeh-' + Date.now() + '.jpg';
+  if(downloads && lastBlob){
+    downloads.save({filename:name, data:lastBlob})['catch'](function(){ manualSave(name); });
+  } else manualSave(name);
+});
+function manualSave(name){
+  try{
+    var a = document.createElement('a');
+    a.href = shotimg.src; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }catch(e){}
+  $('shotnote').textContent = 'If nothing downloaded, press and hold the image and choose Add to Photos.';
+}
+
+/* ---------- controls ---------- */
+var FMT = {
+  rot:  function(v){ return v+'\u00B0'; },
+  size: function(v){ return (v/10).toFixed(1)+'%'; },
+  blur: function(v){ return v<20?'slight':v<45?'soft':v<70?'medium':v<88?'strong':'extreme'; },
+  thr:  function(v){ return (v/100).toFixed(2); },
+  gain: function(v){ return (v/100).toFixed(2); },
+  bg:   function(v){ return v+'%'; },
+  max:  function(v){ return String(v); }
+};
+Object.keys(FMT).forEach(function(key){
+  var el = $('s_'+key), lab = $('v_'+key);
+  el.value = P[key];
+  lab.textContent = FMT[key](P[key]);
+  el.addEventListener('input', function(){
+    P[key] = +el.value;
+    lab.textContent = FMT[key](P[key]);
+    if(key === 'rot'){ buildSprite(); syncRot(); }
+    dirty = true;
+    persist();
+  });
+});
+
+function syncRot(){
+  $('rotval').textContent = P.rot+'\u00B0';
+  $('v_rot').textContent = P.rot+'\u00B0';
+  $('s_rot').value = P.rot;
+  var sn = document.querySelectorAll('.snap');
+  for(var i=0;i<sn.length;i++) sn[i].classList.toggle('on', +sn[i].dataset.rot === P.rot);
+}
+function setRot(v){
+  while(v > 180) v -= 360;
+  while(v < -180) v += 360;
+  P.rot = v; buildSprite(); syncRot(); persist();
+}
+Array.prototype.forEach.call(document.querySelectorAll('.snap'), function(s){
+  s.addEventListener('click', function(){ setRot(+s.dataset.rot); });
+});
+
+var rotchip = $('rotchip'), dragging=false, dragX=0, dragBase=0, moved=false;
+rotchip.addEventListener('touchstart', function(e){
+  dragging=true; moved=false; dragX=e.touches[0].clientX; dragBase=P.rot;
+}, {passive:true});
+rotchip.addEventListener('touchmove', function(e){
+  if(!dragging) return;
+  var dx = e.touches[0].clientX - dragX;
+  if(Math.abs(dx) > 3) moved = true;
+  setRot(Math.round(dragBase + dx*1.2));
+}, {passive:true});
+rotchip.addEventListener('touchend', function(){
+  if(dragging && !moved) setRot(P.rot + 15);
+  dragging = false;
+});
+rotchip.addEventListener('click', function(){
+  if('ontouchstart' in window) return;
+  setRot(P.rot + 15);
+});
+
+$('fxchip').addEventListener('click', function(){
+  fxOn = !fxOn;
+  $('fxstate').textContent = fxOn ? 'ON' : 'OFF';
+  this.classList.toggle('off', !fxOn);
+  dirty = true;
+});
+$('gear').addEventListener('click', function(){ $('panel').classList.toggle('open'); });
+$('start').addEventListener('click', startLive);
+$('resetbtn').addEventListener('click', function(){
+  for(var q in DEF) P[q] = DEF[q];
+  Object.keys(FMT).forEach(function(key){
+    $('s_'+key).value = P[key];
+    $('v_'+key).textContent = FMT[key](P[key]);
+  });
+  buildSprite(); syncRot(); persist(); dirty = true;
+});
+
+/* ---------- boot ---------- */
+// installable manifest, built at runtime so the file stays self-contained
+try{
+  var mf = {
+    name:'Bolt Bokeh', short_name:'Bolt Bokeh', display:'standalone',
+    background_color:'#08090b', theme_color:'#08090b', start_url:location.href,
+    icons:[{src:document.querySelector('link[rel=\'apple-touch-icon\']').href,
+            sizes:'180x180', type:'image/png'}]
+  };
+  var ml = document.createElement('link');
+  ml.rel = 'manifest';
+  ml.href = URL.createObjectURL(new Blob([JSON.stringify(mf)], {type:'application/manifest+json'}));
+  document.head.appendChild(ml);
+}catch(e){}
+
+var standalone = (window.navigator.standalone === true) ||
+  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+
+var camPossible = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) &&
+                  window.isSecureContext === true && !framed;
+
+if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || window.isSecureContext !== true){
+  $('start').textContent = 'Live camera unavailable here';
+  $('start').style.opacity = '.5';
+}
+
+if(camPossible){
+  // promote live camera to the primary action when it can actually work
+  $('start').classList.add('primary');
+  $('pickbtn').classList.remove('primary');
+  $('start').parentNode.insertBefore($('start'), $('pickbtn'));
+  $('start').textContent = 'Start live camera';
+  if(standalone) setTimeout(startLive, 120);
+} else if(framed){
+  var hint = document.createElement('p');
+  hint.style.cssText = 'font-size:11.5px;line-height:1.6;color:var(--dim);max-width:340px;';
+  hint.innerHTML = 'Live camera needs this page at the top level of a browser on https. ' +
+    'It cannot work inside this in-app viewer. Tap <b>Show diagnostics</b> for the Safari route, ' +
+    'or use the photo button, which needs no camera permission.';
+  $('diagbtn').parentNode.insertBefore(hint, $('diagbtn'));
+}
+buildSprite();
+syncRot();
+})();
+</script>
+</body>
+</html>
 
