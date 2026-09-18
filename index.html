@@ -173,20 +173,20 @@
         <input type="range" id="s_size" min="30" max="260" step="1" value="100">
       </div>
       <div class="ctl">
-        <div class="lab">Defocus <b id="v_blur">medium</b></div>
-        <input type="range" id="s_blur" min="0" max="100" step="1" value="55">
-      </div>
-      <div class="ctl">
         <div class="lab">Highlight threshold <b id="v_thr">0.68</b></div>
         <input type="range" id="s_thr" min="15" max="96" step="1" value="68">
+      </div>
+      <div class="ctl">
+        <div class="lab">Hard-edge strictness <b id="v_iso">0.09</b></div>
+        <input type="range" id="s_iso" min="0" max="40" step="1" value="9">
       </div>
       <div class="ctl">
         <div class="lab">Bokeh brightness <b id="v_gain">1.00</b></div>
         <input type="range" id="s_gain" min="20" max="250" step="1" value="100">
       </div>
       <div class="ctl">
-        <div class="lab">Background level <b id="v_bg">50%</b></div>
-        <input type="range" id="s_bg" min="0" max="100" step="1" value="50">
+        <div class="lab">Highlight suppression <b id="v_bg">55%</b></div>
+        <input type="range" id="s_bg" min="0" max="100" step="1" value="55">
       </div>
       <div class="ctl">
         <div class="lab">Max bokeh count <b id="v_max">26</b></div>
@@ -240,10 +240,6 @@ var readout= $('readout');
 
 var det = document.createElement('canvas');
 var dctx = det.getContext('2d', {willReadFrequently:true});
-var tiny = document.createElement('canvas');
-var tctx = tiny.getContext('2d');
-var knock = document.createElement('canvas');
-var kctx = knock.getContext('2d', {willReadFrequently:true});
 var sprite = document.createElement('canvas');
 var sctx = sprite.getContext('2d');
 var SPRITE_PX = 168;
@@ -262,7 +258,7 @@ var maskPts = [];                   // [{x,y,r}] normalised 0..1 of DISPLAYED fr
 var brushR = 42;                    // px on screen, converted at paint time
 var painting = false;
 
-var DEF = {rot:0, size:100, blur:55, thr:68, gain:100, bg:50, max:26};
+var DEF = {rot:0, size:100, thr:68, iso:9, gain:100, bg:55, max:26};
 var P = {};
 for(var k in DEF) P[k] = DEF[k];
 try{
@@ -608,6 +604,35 @@ function findHighlights(mirror){
   }
   cand.sort(function(a,b){ return b.l - a.l; });
 
+  // Hard-edge gate: a real point light or hard glint is small and isolated —
+  // much brighter than its immediate surround. A broad soft glare or a wide
+  // reflective panel is not isolated, it fades gradually into what's next to
+  // it, so it fails this test even if it's just as bright at the peak.
+  // This is what "hard light source" actually means in pixels: high contrast
+  // against a ring around the peak, not just high absolute brightness.
+  var isoMin = P.iso/100;
+  var RIN = 1, ROUT = 8;
+  var isolated = [];
+  for(var ci2=0; ci2<cand.length && ci2<220; ci2++){
+    var cc = cand[ci2];
+    var px2 = Math.round(cc.x*dw), py2 = Math.round(cc.y*dh);
+    var sum=0, n=0;
+    for(var oy=-ROUT; oy<=ROUT; oy++){
+      var yy2 = py2+oy; if(yy2<0||yy2>=dh) continue;
+      for(var ox=-ROUT; ox<=ROUT; ox++){
+        var dist2 = ox*ox+oy*oy;
+        if(dist2 <= RIN*RIN || dist2 > ROUT*ROUT) continue;
+        var xx2 = px2+ox; if(xx2<0||xx2>=dw) continue;
+        var pp = (yy2*dw+xx2)*4;
+        sum += (0.2126*d[pp] + 0.7152*d[pp+1] + 0.0722*d[pp+2]) / 255;
+        n++;
+      }
+    }
+    var ringL = n>0 ? sum/n : cc.l;
+    if(cc.l - ringL >= isoMin) isolated.push(cc);
+  }
+  cand = isolated;
+
   // suppression radius scales with bolt size: peaks close together are one light
   var boltFrac = P.size/1000;
   var minD = Math.max(0.010, boltFrac*0.20);
@@ -616,8 +641,8 @@ function findHighlights(mirror){
     var dispX = mirror ? (1-cand[m].x) : cand[m].x;
     if(maskedOut(dispX, cand[m].y)) continue;
     var ok = true;
-    for(var n=0;n<out.length;n++){
-      var ddx = cand[m].x-out[n].x, ddy = cand[m].y-out[n].y;
+    for(var n2=0;n2<out.length;n2++){
+      var ddx = cand[m].x-out[n2].x, ddy = cand[m].y-out[n2].y;
       if(ddx*ddx+ddy*ddy < minD*minD){ ok=false; break; }
     }
     if(ok) out.push(cand[m]);
@@ -632,67 +657,44 @@ function render(){
   var mirror = (mode === 'live' && facing === 'user');
   var node = srcNode();
 
-  if(!fxOn){
-    vctx.save();
-    if(mirror){ vctx.translate(W,0); vctx.scale(-1,1); }
-    vctx.drawImage(node,0,0,W,H);
-    vctx.restore();
-    return -1;
-  }
-
-  var thrN = P.thr/100;
-
-  // --- base layer: flatten the existing highlights, then defocus ---
-  // Without this the source's own round blobs stay visible under the bolts,
-  // which is what makes a stamped-on-top result look pasted.
-  var kw = 320, kh = Math.max(2, Math.round(kw*H/W));
-  knock.width = kw; knock.height = kh;
-  kctx.drawImage(node,0,0,kw,kh);
-  try{
-    var kd = kctx.getImageData(0,0,kw,kh), b = kd.data;
-    var floor = thrN*255;
-    for(var q=0;q<b.length;q+=4){
-      var lum = 0.2126*b[q] + 0.7152*b[q+1] + 0.0722*b[q+2];
-      if(lum > floor){
-        var f = floor/lum;
-        b[q]   = b[q]*f;
-        b[q+1] = b[q+1]*f;
-        b[q+2] = b[q+2]*f;
-      }
-    }
-    kctx.putImageData(kd,0,0);
-  }catch(e){}
-
-  var shrink = 1 + (P.blur/100)*13;
-  tiny.width  = Math.max(2, Math.round(W/shrink));
-  tiny.height = Math.max(2, Math.round(H/shrink));
-  tctx.imageSmoothingEnabled = true;
-  tctx.drawImage(knock,0,0,tiny.width,tiny.height);
-
+  // Always draw the source at full resolution. Nothing is softened, anywhere,
+  // ever. The only pixels that change are the small patches under an accepted
+  // hard-light hit, suppressed locally so the bolt sprite reads cleanly there.
   vctx.save();
   if(mirror){ vctx.translate(W,0); vctx.scale(-1,1); }
   vctx.imageSmoothingEnabled = true;
   vctx.imageSmoothingQuality = 'high';
-  vctx.drawImage(tiny,0,0,W,H);
+  vctx.drawImage(node,0,0,W,H);
   vctx.restore();
 
-  var bg = P.bg/100;
-  if(bg < 1){
-    vctx.fillStyle = 'rgba(0,0,0,' + (1-bg).toFixed(3) + ')';
-    vctx.fillRect(0,0,W,H);
-  }
+  if(!fxOn) return -1;
 
+  var thrN = P.thr/100;
   var hs = findHighlights(mirror);
   var base = (P.size/1000) * Math.min(W,H);
   var gain = P.gain/100;
-  vctx.globalCompositeOperation = 'lighter';
+  var suppress = P.bg/100;   // how hard the original hot spot gets knocked down locally
+
   for(var i=0;i<hs.length;i++){
     var h = hs[i];
     var sz = base * (0.80 + 0.055*h.r);
     var x = (mirror ? (1-h.x) : h.x) * W;
     var y = h.y * H;
     var energy = (h.l - thrN) / Math.max(0.02, 1-thrN);
-    vctx.globalAlpha = Math.max(0.06, Math.min(1, gain * (0.50 + 0.85*energy)));
+    var a = Math.max(0.06, Math.min(1, gain * (0.50 + 0.85*energy)));
+
+    if(suppress > 0.01){
+      var r = sz*0.62;
+      var grad = vctx.createRadialGradient(x,y,0, x,y,r);
+      grad.addColorStop(0, 'rgba(0,0,0,'+suppress.toFixed(3)+')');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      vctx.globalCompositeOperation = 'source-over';
+      vctx.fillStyle = grad;
+      vctx.beginPath(); vctx.arc(x,y,r,0,Math.PI*2); vctx.fill();
+    }
+
+    vctx.globalCompositeOperation = 'lighter';
+    vctx.globalAlpha = a;
     vctx.drawImage(tinted(h.c[0],h.c[1],h.c[2]), x - sz/2, y - sz/2, sz, sz);
   }
   vctx.globalAlpha = 1;
@@ -748,8 +750,8 @@ function manualSave(name){
 var FMT = {
   rot:  function(v){ return v+'\u00B0'; },
   size: function(v){ return (v/10).toFixed(1)+'%'; },
-  blur: function(v){ return v<20?'slight':v<45?'soft':v<70?'medium':v<88?'strong':'extreme'; },
   thr:  function(v){ return (v/100).toFixed(2); },
+  iso:  function(v){ return (v/100).toFixed(2); },
   gain: function(v){ return (v/100).toFixed(2); },
   bg:   function(v){ return v+'%'; },
   max:  function(v){ return String(v); }
