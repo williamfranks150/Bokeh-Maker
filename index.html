@@ -156,6 +156,22 @@
   <div id="panel">
     <div class="grp">
       <div class="ctl">
+        <div class="lab">Shape</div>
+        <div class="snaps" id="shapepicker">
+          <div class="snap on" data-shape="bolt">Bolt</div>
+          <div class="snap" data-shape="star4">4-Star</div>
+          <div class="snap" data-shape="star5">5-Star</div>
+          <div class="snap" data-shape="heart">Heart</div>
+        </div>
+        <div class="snaps" style="margin-top:6px;">
+          <div class="snap" data-shape="teardrop">Drop</div>
+          <div class="snap" data-shape="circle">Circle</div>
+          <div class="snap" data-shape="hexagon">Hexagon</div>
+          <div class="snap" data-shape="diamond">Diamond</div>
+        </div>
+      </div>
+
+      <div class="ctl">
         <div class="lab">Bolt rotation <b id="v_rot">0&deg;</b></div>
         <input type="range" id="s_rot" min="-180" max="180" step="1" value="0">
         <div class="snaps">
@@ -173,8 +189,8 @@
         <input type="range" id="s_size" min="30" max="260" step="1" value="100">
       </div>
       <div class="ctl">
-        <div class="lab">Highlight threshold <b id="v_thr">0.68</b></div>
-        <input type="range" id="s_thr" min="15" max="96" step="1" value="68">
+        <div class="lab">Highlight threshold <b id="v_thr">0.967</b></div>
+        <input type="range" id="s_thr" min="0" max="100" step="0.1" value="20">
       </div>
       <div class="ctl">
         <div class="lab">Hard-edge strictness <b id="v_iso">0.09</b></div>
@@ -191,6 +207,27 @@
       <div class="ctl">
         <div class="lab">Max bokeh count <b id="v_max">26</b></div>
         <input type="range" id="s_max" min="4" max="160" step="1" value="26">
+      </div>
+
+      <div class="ctl">
+        <div class="lab">Glow <b id="v_glow">0%</b></div>
+        <input type="range" id="s_glow" min="0" max="100" step="1" value="0">
+      </div>
+      <div class="ctl">
+        <div class="lab">Hue shift <b id="v_hue">0&deg;</b></div>
+        <input type="range" id="s_hue" min="-180" max="180" step="1" value="0">
+      </div>
+      <div class="ctl">
+        <div class="lab">Saturation <b id="v_sat">0</b></div>
+        <input type="range" id="s_sat" min="-100" max="100" step="1" value="0">
+      </div>
+      <div class="ctl">
+        <div class="lab">Tint amount <b id="v_tint">0%</b></div>
+        <input type="range" id="s_tint" min="0" max="100" step="1" value="0">
+        <div class="row2" style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <span style="font-size:11px;color:var(--dim);">Tint colour</span>
+          <input type="color" id="s_tintcolor" value="#e8b23a" style="width:44px;height:32px;border-radius:8px;border:1px solid var(--line);background:none;padding:0;">
+        </div>
       </div>
 
       <button class="reset" id="maskbtn" style="background:var(--panel);">Mask subject (exclude from bokeh)</button>
@@ -217,16 +254,76 @@
 (function(){
 "use strict";
 
-/* ---------- bolt #8, normalised, y-up ---------- */
-var BOLT = [
-  [ 0.2163,  0.7366],
-  [-0.3785, -0.1554],
-  [-0.0811, -0.1149],
-  [-0.2163, -0.7366],
-  [ 0.3785,  0.1622],
-  [ 0.0811,  0.1149]
-];
-var BOLT_R = 0.7677;
+/* ---------- shape registry — each shape draws its own path in local
+   canvas coordinates (already translated+rotated); 'enclosing' is the
+   farthest distance any path point sits from the local origin, used to
+   scale the shape to fill the sprite consistently across shapes. ---------- */
+var SHAPES = {
+  bolt: { label:'Bolt', enclosing:0.7677, draw:function(ctx,k){
+    var B=[[0.2163,0.7366],[-0.3785,-0.1554],[-0.0811,-0.1149],
+            [-0.2163,-0.7366],[0.3785,0.1622],[0.0811,0.1149]];
+    ctx.beginPath();
+    for(var i=0;i<B.length;i++){
+      var x=B[i][0]*k, y=-B[i][1]*k;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }},
+  star4: { label:'4-Star', enclosing:1.0, draw:function(ctx,k){
+    ctx.beginPath();
+    for(var i=0;i<8;i++){
+      var ang=-Math.PI/2+i*Math.PI/4, r=(i%2===0)?1.0:0.30;
+      var x=Math.cos(ang)*r*k, y=Math.sin(ang)*r*k;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }},
+  star5: { label:'5-Star', enclosing:1.0, draw:function(ctx,k){
+    ctx.beginPath();
+    for(var i=0;i<10;i++){
+      var ang=-Math.PI/2+i*Math.PI/5, r=(i%2===0)?1.0:0.382;
+      var x=Math.cos(ang)*r*k, y=Math.sin(ang)*r*k;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }},
+  heart: { label:'Heart', enclosing:1.05, draw:function(ctx,k){
+    ctx.beginPath();
+    ctx.moveTo(0, 0.35*k);
+    ctx.bezierCurveTo(0.5*k,-0.25*k, 1.0*k,0.15*k, 0,1.0*k);
+    ctx.bezierCurveTo(-1.0*k,0.15*k, -0.5*k,-0.25*k, 0,0.35*k);
+    ctx.closePath();
+  }},
+  teardrop: { label:'Drop', enclosing:1.0, draw:function(ctx,k){
+    // apex (0,-1) with straight tangent lines into a circle centered
+    // (0,0.30) radius 0.66 — exact tangent geometry, verified offline.
+    ctx.beginPath();
+    ctx.moveTo(0, -1.0*k);
+    ctx.lineTo(0.5686*k, -0.0351*k);
+    ctx.arc(0, 0.30*k, 0.66*k, -0.5325, 3.6741, false);
+    ctx.closePath();
+  }},
+  circle: { label:'Circle', enclosing:1.0, draw:function(ctx,k){
+    ctx.beginPath();
+    ctx.arc(0,0,k,0,Math.PI*2);
+    ctx.closePath();
+  }},
+  hexagon: { label:'Hexagon', enclosing:1.0, draw:function(ctx,k){
+    ctx.beginPath();
+    for(var i=0;i<6;i++){
+      var ang=-Math.PI/2+i*Math.PI/3;
+      var x=Math.cos(ang)*k, y=Math.sin(ang)*k;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }},
+  diamond: { label:'Diamond', enclosing:1.0, draw:function(ctx,k){
+    ctx.beginPath();
+    ctx.moveTo(0,-k); ctx.lineTo(k*0.65,0); ctx.lineTo(0,k); ctx.lineTo(-k*0.65,0);
+    ctx.closePath();
+  }}
+};
+var SHAPE_ORDER = ['bolt','star4','star5','heart','teardrop','circle','hexagon','diamond'];
 
 var $ = function(id){ return document.getElementById(id); };
 
@@ -258,14 +355,75 @@ var maskPts = [];                   // [{x,y,r}] normalised 0..1 of DISPLAYED fr
 var brushR = 42;                    // px on screen, converted at paint time
 var painting = false;
 
-var DEF = {rot:0, size:100, thr:68, iso:9, gain:100, bg:55, max:26};
+var DEF = {rot:0, size:100, thr:20, iso:9, gain:100, bg:55, max:26, glow:0, hue:0, sat:0, tint:0};
 var P = {};
 for(var k in DEF) P[k] = DEF[k];
+P.shape = 'bolt';
+P.tintColor = '#e8b23a';
 try{
-  var raw = localStorage.getItem('boltbokeh.v2');
-  if(raw){ var o = JSON.parse(raw); for(var j in DEF){ if(typeof o[j] === 'number') P[j] = o[j]; } }
+  var raw = localStorage.getItem('boltbokeh.v3');
+  if(raw){
+    var o = JSON.parse(raw);
+    for(var j in DEF){ if(typeof o[j] === 'number') P[j] = o[j]; }
+    if(typeof o.shape === 'string' && SHAPES[o.shape]) P.shape = o.shape;
+    if(typeof o.tintColor === 'string') P.tintColor = o.tintColor;
+  }
 }catch(e){}
-function persist(){ try{ localStorage.setItem('boltbokeh.v2', JSON.stringify(P)); }catch(e){} }
+function persist(){
+  try{ localStorage.setItem('boltbokeh.v3', JSON.stringify(P)); }catch(e){}
+}
+
+/* ---------- colour processing: hue shift, saturation, fixed-colour blend ---------- */
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  var mx=Math.max(r,g,b), mn=Math.min(r,g,b), h=0,s=0,l=(mx+mn)/2;
+  var d=mx-mn;
+  if(d>1e-6){
+    s = l>0.5 ? d/(2-mx-mn) : d/(mx+mn);
+    if(mx===r) h=(g-b)/d+(g<b?6:0);
+    else if(mx===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60;
+  }
+  return [h,s,l];
+}
+function hue2rgb(p,q,t){
+  if(t<0) t+=1; if(t>1) t-=1;
+  if(t<1/6) return p+(q-p)*6*t;
+  if(t<1/2) return q;
+  if(t<2/3) return p+(q-p)*(2/3-t)*6;
+  return p;
+}
+function hslToRgb(h,s,l){
+  h=((h%360)+360)%360/360;
+  if(s<=0) { var v=Math.round(l*255); return [v,v,v]; }
+  var q = l<0.5 ? l*(1+s) : l+s-l*s;
+  var p = 2*l-q;
+  return [
+    Math.round(hue2rgb(p,q,h+1/3)*255),
+    Math.round(hue2rgb(p,q,h)*255),
+    Math.round(hue2rgb(p,q,h-1/3)*255)
+  ];
+}
+function hexToRgb(hex){
+  var v = parseInt(hex.replace('#',''),16);
+  return [(v>>16)&255, (v>>8)&255, v&255];
+}
+function processColor(r,g,b){
+  if(P.tint > 0){
+    var t = P.tint/100;
+    var fc = hexToRgb(P.tintColor);
+    r = r+(fc[0]-r)*t; g = g+(fc[1]-g)*t; b = b+(fc[2]-b)*t;
+  }
+  if(P.hue !== 0 || P.sat !== 0){
+    var hsl = rgbToHsl(r,g,b);
+    hsl[0] += P.hue;
+    hsl[1] = Math.max(0, Math.min(1, hsl[1] + P.sat/100));
+    var out = hslToRgb(hsl[0], hsl[1], hsl[2]);
+    return out;
+  }
+  return [Math.round(r), Math.round(g), Math.round(b)];
+}
 
 /* ---------- source abstraction ---------- */
 function srcNode(){ return mode === 'live' ? video : photo; }
@@ -280,16 +438,12 @@ function buildSprite(){
   ss.width = ss.height = SS;
   ssctx.setTransform(1,0,0,1,0,0);
   ssctx.clearRect(0,0,SS,SS);
-  var c = SS/2, k = c / BOLT_R * 0.90;
+  var shapeDef = SHAPES[P.shape] || SHAPES.bolt;
+  var c = SS/2, k = c / shapeDef.enclosing * 0.90;
   ssctx.save();
   ssctx.translate(c,c);
   ssctx.rotate(P.rot * Math.PI/180);
-  ssctx.beginPath();
-  for(var i=0;i<BOLT.length;i++){
-    var x = BOLT[i][0]*k, y = -BOLT[i][1]*k;
-    if(i===0) ssctx.moveTo(x,y); else ssctx.lineTo(x,y);
-  }
-  ssctx.closePath();
+  shapeDef.draw(ssctx, k);
   ssctx.fillStyle = '#fff';
   ssctx.fill();
   ssctx.restore();
@@ -471,6 +625,7 @@ function go(){
   $('diagbtn').textContent = 'Show diagnostics';
   maskPts = [];               // a mask painted for the last frame won't line up with a new one
   setMaskMode(false);
+  tracked = [];                // stale points from a prior frame/photo shouldn't linger
   running = true;
   dirty = true;
   sizeCanvas();
@@ -560,6 +715,14 @@ $('maskdone').addEventListener('click', function(){ setMaskMode(false); });
 $('maskclear').addEventListener('click', function(){ maskPts = []; redrawMask(); dirty = true; });
 $('s_brush').addEventListener('input', function(){ brushR = +this.value; });
 
+/* ---------- threshold remap: old scale's 100% (0.96) now sits at 1% of the
+   new 0-100 slider, leaving 99% of the range to go stricter than before ---------- */
+function thrFromSlider(s){
+  var oldMin=0.15, anchor=0.96, ceil=0.999, bp=1;
+  if(s<=bp) return oldMin + (anchor-oldMin)*(s/bp);
+  return anchor + (ceil-anchor)*((s-bp)/(100-bp));
+}
+
 /* ---------- detection ---------- */
 function findHighlights(mirror){
   var dw = det.width, dh = det.height;
@@ -568,7 +731,7 @@ function findHighlights(mirror){
   try{ img = dctx.getImageData(0,0,dw,dh); }catch(e){ return []; }
   var d = img.data;
 
-  var thr = P.thr/100;
+  var thr = thrFromSlider(P.thr);
   var cell = 7;
   var cx = Math.ceil(dw/cell);
   var cy = Math.ceil(dh/cell);
@@ -650,6 +813,51 @@ function findHighlights(mirror){
   return out;
 }
 
+/* ---------- temporal stabilization (live only): raw per-frame detection is
+   noisy right at threshold, so a light can flicker on/off and resample a
+   slightly different colour every frame. Track candidates across frames and
+   ease alpha/position/colour so an accepted hit fades in, holds steady, and
+   fades out — instead of popping. Photo mode renders once and needs none of
+   this; it uses the raw detection directly. ---------- */
+var tracked = [];
+var EASE_A = 0.28, EASE_XY = 0.45, EASE_C = 0.18, MISS_LIMIT = 10;
+function trackHighlights(hs){
+  var matchR = Math.max(0.018, (P.size/1000)*0.35);
+  var claimed = [];
+  for(var i=0;i<hs.length;i++){
+    var h = hs[i];
+    var best=-1, bestD=matchR*matchR;
+    for(var t=0;t<tracked.length;t++){
+      if(claimed[t]) continue;
+      var dx=h.x-tracked[t].x, dy=h.y-tracked[t].y, dd=dx*dx+dy*dy;
+      if(dd<bestD){ bestD=dd; best=t; }
+    }
+    if(best>=0){
+      var tp = tracked[best];
+      claimed[best]=true;
+      tp.x += (h.x-tp.x)*EASE_XY; tp.y += (h.y-tp.y)*EASE_XY;
+      tp.r += (h.r-tp.r)*EASE_XY;
+      tp.c[0] += (h.c[0]-tp.c[0])*EASE_C;
+      tp.c[1] += (h.c[1]-tp.c[1])*EASE_C;
+      tp.c[2] += (h.c[2]-tp.c[2])*EASE_C;
+      tp.l = h.l; tp.targetAlpha = 1; tp.missed = 0;
+    } else {
+      tracked.push({x:h.x,y:h.y,r:h.r,c:h.c.slice(),l:h.l,alpha:0,targetAlpha:1,missed:0});
+    }
+  }
+  for(var t2=0;t2<tracked.length;t2++){
+    if(!claimed[t2]){ tracked[t2].targetAlpha = 0; tracked[t2].missed++; }
+  }
+  tracked = tracked.filter(function(tp){ return tp.missed <= MISS_LIMIT; });
+  var out = [];
+  for(var t3=0;t3<tracked.length;t3++){
+    var tp2 = tracked[t3];
+    tp2.alpha += (tp2.targetAlpha - tp2.alpha) * EASE_A;
+    if(tp2.alpha > 0.008) out.push({x:tp2.x,y:tp2.y,r:tp2.r,c:tp2.c,l:tp2.l,fade:tp2.alpha});
+  }
+  return out;
+}
+
 /* ---------- render ---------- */
 function render(){
   var W = view.width, H = view.height;
@@ -669,33 +877,49 @@ function render(){
 
   if(!fxOn) return -1;
 
-  var thrN = P.thr/100;
-  var hs = findHighlights(mirror);
+  var thrN = thrFromSlider(P.thr);
+  var hsRaw = findHighlights(mirror);
+  var hs = (mode === 'live') ? trackHighlights(hsRaw) : hsRaw;
   var base = (P.size/1000) * Math.min(W,H);
   var gain = P.gain/100;
   var suppress = P.bg/100;   // how hard the original hot spot gets knocked down locally
+  var glowAmt = P.glow/100;
+  var canFilter = ('filter' in vctx);
 
   for(var i=0;i<hs.length;i++){
     var h = hs[i];
+    var fade = (h.fade !== undefined) ? h.fade : 1;
     var sz = base * (0.80 + 0.055*h.r);
     var x = (mirror ? (1-h.x) : h.x) * W;
     var y = h.y * H;
     var energy = (h.l - thrN) / Math.max(0.02, 1-thrN);
-    var a = Math.max(0.06, Math.min(1, gain * (0.50 + 0.85*energy)));
+    var a = Math.max(0.06, Math.min(1, gain * (0.50 + 0.85*energy))) * fade;
+    var col = processColor(h.c[0], h.c[1], h.c[2]);
+    var spr = tinted(col[0], col[1], col[2]);
 
     if(suppress > 0.01){
       var r = sz*0.62;
       var grad = vctx.createRadialGradient(x,y,0, x,y,r);
-      grad.addColorStop(0, 'rgba(0,0,0,'+suppress.toFixed(3)+')');
+      grad.addColorStop(0, 'rgba(0,0,0,'+(suppress*fade).toFixed(3)+')');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       vctx.globalCompositeOperation = 'source-over';
       vctx.fillStyle = grad;
       vctx.beginPath(); vctx.arc(x,y,r,0,Math.PI*2); vctx.fill();
     }
 
+    if(glowAmt > 0.01 && canFilter){
+      var gsz = sz * (1 + 1.4*glowAmt);
+      vctx.save();
+      vctx.filter = 'blur(' + Math.max(1, sz*0.22*glowAmt) + 'px)';
+      vctx.globalCompositeOperation = 'lighter';
+      vctx.globalAlpha = a * 0.65 * glowAmt;
+      vctx.drawImage(spr, x-gsz/2, y-gsz/2, gsz, gsz);
+      vctx.restore();
+    }
+
     vctx.globalCompositeOperation = 'lighter';
     vctx.globalAlpha = a;
-    vctx.drawImage(tinted(h.c[0],h.c[1],h.c[2]), x - sz/2, y - sz/2, sz, sz);
+    vctx.drawImage(spr, x - sz/2, y - sz/2, sz, sz);
   }
   vctx.globalAlpha = 1;
   vctx.globalCompositeOperation = 'source-over';
@@ -750,11 +974,15 @@ function manualSave(name){
 var FMT = {
   rot:  function(v){ return v+'\u00B0'; },
   size: function(v){ return (v/10).toFixed(1)+'%'; },
-  thr:  function(v){ return (v/100).toFixed(2); },
+  thr:  function(v){ return thrFromSlider(v).toFixed(3); },
   iso:  function(v){ return (v/100).toFixed(2); },
   gain: function(v){ return (v/100).toFixed(2); },
   bg:   function(v){ return v+'%'; },
-  max:  function(v){ return String(v); }
+  max:  function(v){ return String(v); },
+  glow: function(v){ return v+'%'; },
+  hue:  function(v){ return v+'\u00B0'; },
+  sat:  function(v){ return String(v); },
+  tint: function(v){ return v+'%'; }
 };
 Object.keys(FMT).forEach(function(key){
   var el = $('s_'+key), lab = $('v_'+key);
@@ -773,7 +1001,7 @@ function syncRot(){
   $('rotval').textContent = P.rot+'\u00B0';
   $('v_rot').textContent = P.rot+'\u00B0';
   $('s_rot').value = P.rot;
-  var sn = document.querySelectorAll('.snap');
+  var sn = document.querySelectorAll('.snap[data-rot]');
   for(var i=0;i<sn.length;i++) sn[i].classList.toggle('on', +sn[i].dataset.rot === P.rot);
 }
 function setRot(v){
@@ -781,8 +1009,27 @@ function setRot(v){
   while(v < -180) v += 360;
   P.rot = v; buildSprite(); syncRot(); persist();
 }
-Array.prototype.forEach.call(document.querySelectorAll('.snap'), function(s){
+Array.prototype.forEach.call(document.querySelectorAll('.snap[data-rot]'), function(s){
   s.addEventListener('click', function(){ setRot(+s.dataset.rot); });
+});
+
+/* ---------- shape picker ---------- */
+function syncShape(){
+  var sn = document.querySelectorAll('.snap[data-shape]');
+  for(var i=0;i<sn.length;i++) sn[i].classList.toggle('on', sn[i].dataset.shape === P.shape);
+}
+function setShape(name){
+  if(!SHAPES[name]) return;
+  P.shape = name; buildSprite(); syncShape(); persist();
+}
+Array.prototype.forEach.call(document.querySelectorAll('.snap[data-shape]'), function(s){
+  s.addEventListener('click', function(){ setShape(s.dataset.shape); });
+});
+
+/* ---------- tint colour swatch ---------- */
+$('s_tintcolor').value = P.tintColor;
+$('s_tintcolor').addEventListener('input', function(){
+  P.tintColor = this.value; dirty = true; persist();
 });
 
 var rotchip = $('rotchip'), dragging=false, dragX=0, dragBase=0, moved=false;
@@ -818,6 +1065,9 @@ $('resetbtn').addEventListener('click', function(){
     $('s_'+key).value = P[key];
     $('v_'+key).textContent = FMT[key](P[key]);
   });
+  P.shape = 'bolt'; P.tintColor = '#e8b23a';
+  $('s_tintcolor').value = P.tintColor;
+  syncShape();
   buildSprite(); syncRot(); persist(); dirty = true;
 });
 
@@ -864,6 +1114,7 @@ if(camPossible){
 }
 buildSprite();
 syncRot();
+syncShape();
 })();
 </script>
 </body>
