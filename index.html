@@ -796,7 +796,11 @@ function findHighlights(mirror){
   }
   cand = isolated;
 
-  // suppression radius scales with bolt size: peaks close together are one light
+  // A large or bright fixture can register more than one local maximum —
+  // that's one physical light, not several. Merge peaks whose measured
+  // bright extents actually touch, not just peaks within a fixed radius
+  // tied to the display size setting (which has nothing to do with how
+  // big the light in the image actually is).
   var boltFrac = P.size/1000;
   var minD = Math.max(0.010, boltFrac*0.20);
   var out = [];
@@ -806,7 +810,9 @@ function findHighlights(mirror){
     var ok = true;
     for(var n2=0;n2<out.length;n2++){
       var ddx = cand[m].x-out[n2].x, ddy = cand[m].y-out[n2].y;
-      if(ddx*ddx+ddy*ddy < minD*minD){ ok=false; break; }
+      var dist = Math.sqrt(ddx*ddx+ddy*ddy);
+      var extentD = (cand[m].r + out[n2].r) / dw * 1.15;
+      if(dist < Math.max(minD, extentD)){ ok=false; break; }
     }
     if(ok) out.push(cand[m]);
   }
